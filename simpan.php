@@ -1,82 +1,141 @@
 <?php
-// Mencegah akses langsung tanpa mengirim formulir
-if ($_SERVER["REQUEST_METHOD"] != "POST") {
-    header("Location: index.html");
+session_start();
+// Proteksi halaman: Jika belum login, arahkan kembali ke halaman login.php
+if (!isset($_SESSION['user_login'])) {
+    header("Location: login.php");
     exit();
 }
-
-// 1. Tangkap data dari form menggunakan $_POST
-$kode     = htmlspecialchars($_POST['kode'] ?? '');
-$nama     = htmlspecialchars($_POST['nama'] ?? '');
-$kategori = htmlspecialchars($_POST['kategori'] ?? '');
-$jumlah   = (int)($_POST['jumlah'] ?? 0);
-$harga    = (float)($_POST['harga'] ?? 0);
-$kondisi  = htmlspecialchars($_POST['kondisi'] ?? '');
-
-// 2. Perhitungan Statis: Total Estimasi Nilai Aset (Jumlah x Harga Satuan)
-$total_nilai_aset = $jumlah * $harga;
 ?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Resume Pemrosesan Barang - SIM-Barang</title>
+    <title>SIM-Barang - Sistem Informasi Manajemen Inventaris</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
+    <!-- Header & Navigasi -->
     <header>
-        <h1>SIM-Barang - Hasil Pemrosesan Sisi Server (PHP)</h1>
+        <h1>SIM-Barang (Sistem Informasi Manajemen Inventaris)</h1>
+        <nav>
+            <ul>
+                <li><a href="index.php">Beranda</a></li>
+                <li><a href="#tabel-barang">Inventaris</a></li>
+                <li><a href="#form-barang">Tambah Barang</a></li>
+                <li><a href="logout.php" style="color: #ffcccc; font-weight: bold;">Logout</a></li>
+            </ul>
+        </nav>
     </header>
 
+    <!-- Konten Utama -->
     <main>
-        <section>
-            <h2>Ringkasan Data Barang Terinput</h2>
-            <p>Data berikut telah berhasil diterima dan diproses oleh server melalui metode <strong>HTTP POST</strong>:</p>
-            <br>
-
-            <!-- Tabel Ringkasan Pemrosesan -->
-            <table>
-                <tr>
-                    <th>Kode Barang</th>
-                    <td><?= $kode; ?></td>
-                </tr>
-                <tr>
-                    <th>Nama Barang</th>
-                    <td><?= $nama; ?></td>
-                </tr>
-                <tr>
-                    <th>Kategori</th>
-                    <td><?= $kategori; ?></td>
-                </tr>
-                <tr>
-                    <th>Jumlah Barang</th>
-                    <td><?= $jumlah; ?> unit</td>
-                </tr>
-                <tr>
-                    <th>Harga Satuan</th>
-                    <td>Rp <?= number_format($harga, 0, ',', '.'); ?></td>
-                </tr>
-                <tr>
-                    <th>Total Estimasi Nilai Aset</th>
-                    <td><strong>Rp <?= number_format($total_nilai_aset, 0, ',', '.'); ?></strong></td>
-                </tr>
-                <tr>
-                    <th>Kondisi</th>
-                    <td><?= $kondisi; ?></td>
-                </tr>
+        
+        <!-- Bagian 1: Tabel Inventaris Barang -->
+        <section id="tabel-barang">
+            <h2>Daftar Inventaris Barang</h2>
+            <table border="1" cellpadding="10" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Kode Barang</th>
+                        <th>Nama Barang</th>
+                        <th>Kategori</th>
+                        <th>Jumlah</th>
+                        <th>Kondisi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>BRG-001</td>
+                        <td>Proyektor Epson</td>
+                        <td>Elektronik</td>
+                        <td>5</td>
+                        <td>Baik</td>
+                    </tr>
+                    <tr>
+                        <td>BRG-002</td>
+                        <td>Laptop Lenovo ThinkPad</td>
+                        <td>Elektronik</td>
+                        <td>10</td>
+                        <td>Baik</td>
+                    </tr>
+                    <tr>
+                        <td>BRG-003</td>
+                        <td>Meja Kerja Kayu</td>
+                        <td>Furnitur</td>
+                        <td>15</td>
+                        <td>Cukup</td>
+                    </tr>
+                </tbody>
             </table>
-
-            <br>
-            <a href="index.html" style="display: inline-block; padding: 10px 15px; background-color: #2c3e50; color: white; text-decoration: none; border-radius: 4px;">&larr; Kembali ke Formulir Utama</a>
         </section>
+
+        <hr style="margin: 30px 0;">
+
+        <!-- Bagian 2: Formulir Input Barang -->
+        <section id="form-barang">
+            <h2>Formulir Input Barang Baru</h2>
+            <form action="simpan.php" method="POST">
+                
+                <div>
+                    <label for="kode">Kode Barang:</label><br>
+                    <input type="text" id="kode" name="kode" placeholder="Contoh: BRG-004" required>
+                </div>
+                <br>
+
+                <div>
+                    <label for="nama">Nama Barang:</label><br>
+                    <input type="text" id="nama" name="nama" placeholder="Masukkan nama barang" required>
+                </div>
+                <br>
+
+                <div>
+                    <label for="kategori">Kategori:</label><br>
+                    <select id="kategori" name="kategori" required>
+                        <option value="">-- Pilih Kategori --</option>
+                        <option value="Elektronik">Elektronik</option>
+                        <option value="Furnitur">Furnitur</option>
+                        <option value="ATK">Alat Tulis Kantor (ATK)</option>
+                    </select>
+                </div>
+                <br>
+
+                <div>
+                    <label for="jumlah">Jumlah:</label><br>
+                    <input type="number" id="jumlah" name="jumlah" min="1" placeholder="Masukkan jumlah" required>
+                </div>
+                <br>
+
+                <div>
+                    <label for="harga">Harga Satuan (Rp):</label><br>
+                    <input type="number" id="harga" name="harga" min="0" placeholder="Masukkan harga satuan" required>
+                </div>
+                <br>
+
+                <div>
+                    <label for="kondisi">Kondisi:</label><br>
+                    <select id="kondisi" name="kondisi" required>
+                        <option value="">-- Pilih Kondisi --</option>
+                        <option value="Baik">Baik</option>
+                        <option value="Cukup">Cukup</option>
+                        <option value="Rusak Ringan">Rusak Ringan</option>
+                    </select>
+                </div>
+                <br>
+
+                <button type="submit">Simpan Barang</button>
+            </form>
+        </section>
+
     </main>
 
+    <!-- Footer -->
     <footer>
         <p>&copy; 2026 SIM-Barang. D3 Manajemen Informatika - Politeknik Negeri Sriwijaya.</p>
     </footer>
 
+    <!-- Hubungkan JavaScript -->
+    <script src="main.js"></script>
 </body>
 </html>
